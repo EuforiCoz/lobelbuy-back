@@ -6,7 +6,6 @@ const path = require("path"); //vercel
 const multer = require('multer');
 
 app.use(cors())
-app.use('port', process.env.PORT || 5000); 
 const http = require("http").Server(app);
 const io = require("socket.io")(http, {
     cors: {
@@ -574,5 +573,5 @@ app.post("/crearSala", (req, res) => {
     })
 })*/
 
-http.listen(app.get('port'));
+http.listen(80);
 
