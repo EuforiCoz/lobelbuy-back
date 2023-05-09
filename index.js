@@ -91,7 +91,7 @@ app.post("/api/registrarse", (req, res) => {
     const nombre = req.body.nombreRegistro;
     const correo = req.body.correoRegistro;
     const contrasena = req.body.contrasenaRegistro;
-    conexion.query("INSERT INTO usuarios SET ?", {nombre: nombre, apellido: "", direccion: "", correo: correo, contrasena: contrasena, sesion: 0}, (error, results)=>{
+    conexion.query("INSERT INTO usuarios SET ?", {nombre: nombre, apellido: "", direccion: "", correo: correo, contrasena: contrasena, sesion: 0, imagen: ""}, (error, results)=>{
         if(error){
             console.log(error);
         }else{
