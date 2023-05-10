@@ -522,15 +522,51 @@ app.post("/obtenerMensajes", (req, res) => {
    
 })
 
+app.post("/mostrarProductosFavoritos", (req, res) => {
+    const usuario_id = req.body.usuario_id;
+
+    sql = `SELECT p.id, p.nombre, p.precio, p.imagen
+    FROM favoritos AS f
+    JOIN productos AS p ON f.producto_id = p.id
+    WHERE f.usuario_id = ${usuario_id}`;
+
+    conexion.query(sql, (error, results)=>{
+        if(error){
+            console.log(error);
+            res.status(400).send(error);
+        }else{
+
+            res.status(200).send(results);
+        }
+    })
+})
+
+app.post("/saberFavorito", (req, res) => {
+    
+    const usuario_id = req.body.usuario_id;
+    const producto_id = req.body.producto_id;
+
+    var sql = `SELECT EXISTS(SELECT 1 FROM favoritos WHERE producto_id = ${producto_id} AND usuario_id = ${usuario_id}) AS esta_en_favoritos`;
+
+    conexion.query(sql, (error, results)=>{
+        if(error){
+            console.log(error);
+            res.status(400).send(error);
+        }else{
+            console.log(results[0])
+            res.status(200).send(results[0]);
+        }
+    })
+})
+
 app.post("/guardarFavorito", (req, res) => {
    
     const usuario_id = req.body.usuario_id;
     const producto_id = req.body.producto_id;
-
-    var sql = `INSERT INTO favoritos VALUES (${producto_id}, ${usuario_id})`;
     
-    conexion.query(sql, (error, results)=>{
+    conexion.query("INSERT INTO favoritos SET ?", {producto_id: producto_id, usuario_id: usuario_id}, (error, results)=>{
         if(error){
+            console.log(error);
             res.status(400).send(error);
         }else{
             res.status(200).send("Insertado");
@@ -606,7 +642,4 @@ app.post("/crearSala", (req, res) => {
     })
 })*/
 
-http.listen(5000)
-
-
-
+http.listen(5000);
