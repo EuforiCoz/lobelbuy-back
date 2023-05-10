@@ -522,6 +522,39 @@ app.post("/obtenerMensajes", (req, res) => {
    
 })
 
+app.post("/guardarFavorito", (req, res) => {
+   
+    const usuario_id = req.body.usuario_id;
+    const producto_id = req.body.producto_id;
+
+    var sql = `INSERT INTO favoritos VALUES (${producto_id}, ${usuario_id})`;
+    
+    conexion.query(sql, (error, results)=>{
+        if(error){
+            res.status(400).send(error);
+        }else{
+            res.status(200).send("Insertado");
+        }
+    })
+   
+})
+
+app.post("/eliminarFavorito", (req, res) => {
+   
+    const producto_id = req.body.producto_id;
+
+    var sql = `DELETE FROM favoritos WHERE producto_id = ${producto_id}`;
+    
+    conexion.query(sql, (error, results)=>{
+        if(error){
+            res.status(400).send(error);
+        }else{
+            res.status(200).send("Eliminado");
+        }
+    })
+   
+})
+
 /*
 app.post("/conversaciones", (req, res) => {
    
@@ -573,5 +606,7 @@ app.post("/crearSala", (req, res) => {
     })
 })*/
 
-http.listen(5000);
+http.listen(5000)
+
+
 
