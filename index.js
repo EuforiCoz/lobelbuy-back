@@ -216,7 +216,7 @@ app.post("/subirProducto", upload.single('file'),  (req, res) => {
 
     subirImagen()
     .then((urlImagen) => {
-        conexion.query("INSERT INTO productos SET ?", {nombre: nombre, categoria: categoria, precio: precio, estado: estado, descripcion: descripcion, usuario_id: usuario, imagen: urlImagen}, (error, results)=>{
+        conexion.query("INSERT INTO productos SET ?", {nombre: nombre, categoria: categoria, precio: precio, estado: estado, descripcion: descripcion, reservado: 0, usuario_id: usuario, imagen: urlImagen}, (error, results)=>{
             if(error){
                 console.log(error);
             }else{
@@ -237,7 +237,9 @@ app.post("/subirProducto", upload.single('file'),  (req, res) => {
 app.post("/mostrarProductos", (req, res) => {
    
     const usuario = req.body.usuario;
+    console.log(usuario)
     conexion.query("SELECT * FROM productos WHERE usuario_id = ?",[usuario], (error, results) => {
+        console.log(results)
         if(error){
             console.log("incorrecto")
         }else{
@@ -590,6 +592,28 @@ app.post("/eliminarFavorito", (req, res) => {
     })
    
 })
+
+
+app.post("/reservarProducto", (req, res) => {
+   
+    const producto_id = req.body.id;
+    const reservado = req.body.reservado;
+
+    //console.log(reservado)
+    
+    var sql = `UPDATE productos SET reservado = ${reservado} WHERE id = ${producto_id}`;
+    
+    conexion.query(sql, (error, results)=>{
+        console.log(results);
+        if(error){
+            res.status(400).send(error);
+        }else{
+            res.status(200).send(results);
+        }
+    })
+   
+})
+
 
 /*
 app.post("/conversaciones", (req, res) => {
