@@ -237,9 +237,7 @@ app.post("/subirProducto", upload.single('file'),  (req, res) => {
 app.post("/mostrarProductos", (req, res) => {
    
     const usuario = req.body.usuario;
-    console.log(usuario)
     conexion.query("SELECT * FROM productos WHERE usuario_id = ?",[usuario], (error, results) => {
-        console.log(results)
         if(error){
             console.log("incorrecto")
         }else{
@@ -593,7 +591,6 @@ app.post("/eliminarFavorito", (req, res) => {
    
 })
 
-
 app.post("/reservarProducto", (req, res) => {
    
     const producto_id = req.body.id;
@@ -601,7 +598,12 @@ app.post("/reservarProducto", (req, res) => {
 
     //console.log(reservado)
     
-    var sql = `UPDATE productos SET reservado = ${reservado} WHERE id = ${producto_id}`;
+    var sql = `UPDATE productos
+    SET reservado = CASE
+        WHEN reservado = 0 THEN 1
+        WHEN reservado = 1 THEN 0
+    END
+    WHERE id = ${producto_id};`;
     
     conexion.query(sql, (error, results)=>{
         console.log(results);
@@ -611,6 +613,36 @@ app.post("/reservarProducto", (req, res) => {
             res.status(200).send(results);
         }
     })
+   
+})
+
+app.post("/venderProducto", (req, res) => {
+   
+    const producto_id = req.body.producto_id;
+    const comprador_id = req.body.comprador_id;
+    const vendedor_id = req.body.vendedor_id;
+
+    //console.log(reservado)
+    
+    var sql = `UPDATE productos SET reservado = 2 WHERE id = ${producto_id};`;
+    
+    conexion.query(sql, (error, results)=>{
+       
+        if(error){
+            res.status(400).send(error);
+        }else{
+            conexion.query("INSERT INTO reseñas SET ?", {valoracion: 0, comentario: "", estado: 0, producto_id: producto_id, comprador_id: comprador_id, vendedor_id: vendedor_id}, (error, results)=>{
+               
+                if(error){
+                    res.status(400).send(error);
+                }else{
+                    res.status(200).send(results);
+                }
+            })
+        }
+    })
+    
+    
    
 })
 
@@ -667,3 +699,4 @@ app.post("/crearSala", (req, res) => {
 })*/
 
 http.listen(5000);
+
