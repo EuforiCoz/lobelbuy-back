@@ -170,7 +170,7 @@ app.post("/perfil/guardarDatos", upload.single('file'), (req, res) => {
 })
 
 app.post("/perfil/obtenerDatos", (req, res) => {
-    const id = req.body.id;
+    const id = req.body.usuario_id;
    
     conexion.query("SELECT * FROM usuarios WHERE usuario_id = ?",[id], (error, results) => {
         if(error){
@@ -238,6 +238,30 @@ app.post("/mostrarProductos", (req, res) => {
    
     const usuario = req.body.usuario;
     conexion.query("SELECT * FROM productos WHERE usuario_id = ?",[usuario], (error, results) => {
+        if(error){
+            console.log("incorrecto")
+        }else{
+            res.status(200).send(results)
+        }
+   })
+})
+
+app.post("/mostrarProductosEnVenta", (req, res) => {
+   
+    const usuario = req.body.usuario_id;
+    conexion.query("SELECT * FROM productos WHERE reservado != 2  && usuario_id = ?",[usuario], (error, results) => {
+        if(error){
+            console.log("incorrecto")
+        }else{
+            res.status(200).send(results)
+        }
+   })
+})
+
+app.post("/mostrarProductosVendidos", (req, res) => {
+   
+    const usuario = req.body.usuario_id;
+    conexion.query("SELECT * FROM productos WHERE usuario_id = ? && reservado = 2",[usuario], (error, results) => {
         if(error){
             console.log("incorrecto")
         }else{
@@ -391,17 +415,17 @@ app.post("/buscarProducto", (req, res) => {
     if(nombre == null && categoria == null && estado == null){
         sql = "SELECT * FROM productos";
     } else if(nombre != null && categoria == null && estado == null){
-        sql = `SELECT * FROM productos WHERE nombre LIKE '%${nombre}%'`;
+        sql = `SELECT * FROM productos WHERE nombre LIKE '%${nombre}%' AND reservado <> 2`;
     } else if(nombre != null && categoria != null && estado == null){
-        sql = `SELECT * FROM productos WHERE nombre LIKE '%${nombre}%' AND categoria = '${categoria}'`;
+        sql = `SELECT * FROM productos WHERE nombre LIKE '%${nombre}%' AND categoria = '${categoria}' AND reservado <> 2`;
     } else if(nombre != null && categoria != null && estado != null){
-        sql = `SELECT * FROM productos WHERE nombre LIKE '%${nombre}%' AND categoria = '${categoria}' AND estado = '${estado}'`;
+        sql = `SELECT * FROM productos WHERE nombre LIKE '%${nombre}%' AND categoria = '${categoria}' AND estado = '${estado}' AND reservado <> 2`;
     } else if(nombre == null && categoria != null && estado == null){
-         sql = `SELECT * FROM productos WHERE categoria = '${categoria}'`;
+         sql = `SELECT * FROM productos WHERE categoria = '${categoria}' AND reservado <> 2`;
     } else if(nombre == null && categoria != null && estado != null){
-        sql = `SELECT * FROM productos WHERE categoria = '${categoria}' AND estado = '${estado}'`;
+        sql = `SELECT * FROM productos WHERE categoria = '${categoria}' AND estado = '${estado}' AND reservado <> 2`;
     } else if(nombre != null && categoria != null && estado != null){
-        sql = `SELECT * FROM productos WHERE nombre LIKE '%${nombre}%' AND categoria = '${categoria}' AND estado = '${estado}'`;
+        sql = `SELECT * FROM productos WHERE nombre LIKE '%${nombre}%' AND categoria = '${categoria}' AND estado = '${estado}' AND reservado <> 2`;
     }
    
     conexion.query(sql, (error, results) => {
@@ -641,62 +665,61 @@ app.post("/venderProducto", (req, res) => {
             })
         }
     })
-    
-    
-   
 })
 
-
-/*
-app.post("/conversaciones", (req, res) => {
+app.post("/resenasPorVentas", (req, res) => {
    
-    const usuario_1 = req.body.usuario_1;
-    const usuario_2 = req.body.usuario_2;
-    var encontrado = false;
-    conexion.query("SELECT * FROM conversaciones WHERE usuario_1 = ? && usuario_2 = ?",[usuario_1, usuario_2], (error, results) => {
-        if(error){
-            console.log("incorrecto")
-        }else{
-            //res.status(200).send(results[0])
-            if(results.length != 0) {
-                encontrado = true;
-                res.status(200).send(results[0])
-            }
-            else {
-                conexion.query("SELECT * FROM conversaciones WHERE usuario_1 = ? && usuario_2 = ?",[usuario_2, usuario_1], (error, results) => {
-                    if(error){
-                        console.log("incorrecto")
-                    }else{
-                        //res.status(200).send(results[0])
-                        if(results.length != 0) {
-                            encontrado = true;
-                            res.status(200).send(results[0])
-                        }
-                    }
-                })
-            }
-           
-        }
-   })
-})
-
-app.post("/crearSala", (req, res) => {
+    const usuario_id = req.body.usuario_id;
     
-    const usuario_1 = req.body.usuario_1;
-    const usuario_2 = req.body.usuario_2;
-    const sala = Math.random() * (1000000 - 1) + 1;
-    conexion.query("INSERT INTO conversaciones SET ?", {usuario_1: usuario_1, usuario_2: usuario_2, sala: sala}, (error, results)=>{
+    var sql = `SELECT r.*, p.imagen
+        FROM reseñas r
+        JOIN productos p ON r.producto_id = p.id
+        WHERE vendedor_id = ${usuario_id} && r.estado = 1`;
+    
+    conexion.query(sql, (error, results)=>{
+       
         if(error){
-            console.log(error);
+            res.status(400).send(error);
         }else{
-            if(results.protocol41){
-                res.status(200).send("Creada correctamente")
-            } else {
-                res.status(400).send("No se ha podido crear el producto")
-            }
+            res.status(200).send(results);
         }
     })
-})*/
+})
+
+app.post("/resenasPorCompras", (req, res) => {
+   
+    const usuario_id = req.body.usuario_id;
+    
+    var sql = `SELECT r.*, p.imagen
+        FROM reseñas r
+        JOIN productos p ON r.producto_id = p.id
+        WHERE comprador_id = ${usuario_id}`;
+    
+    conexion.query(sql, (error, results)=>{
+       
+        if(error){
+            res.status(400).send(error);
+        }else{
+            res.status(200).send(results);
+        }
+    })
+})
+
+app.post("/enviarResena", (req, res) => {
+   
+    const valoracion = req.body.valoracion;
+    const comentario = req.body.comentario;
+    const producto_id = req.body.producto_id;
+    const usuario_id = req.body.usuario_id;
+    
+    conexion.query("UPDATE reseñas SET valoracion = ?, comentario = ?, estado = ? WHERE producto_id = ? && comprador_id = ? ", [valoracion, comentario, 1, producto_id, usuario_id], (error, results)=>{
+       
+        if(error){
+            res.status(400).send(error);
+        }else{
+            res.status(200).send(results);
+        }
+    })
+})
 
 http.listen(5000);
-
