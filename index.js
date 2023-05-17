@@ -671,9 +671,10 @@ app.post("/resenasPorVentas", (req, res) => {
    
     const usuario_id = req.body.usuario_id;
     
-    var sql = `SELECT r.*, p.imagen
+    var sql = `SELECT r.*, p.nombre as nombre_producto, p.imagen, u.nombre as nombre_vendedor, u.imagen as foto
         FROM reseñas r
         JOIN productos p ON r.producto_id = p.id
+        JOIN usuarios u ON r.comprador_id = u.usuario_id
         WHERE vendedor_id = ${usuario_id} && r.estado = 1`;
     
     conexion.query(sql, (error, results)=>{
@@ -690,10 +691,11 @@ app.post("/resenasPorCompras", (req, res) => {
    
     const usuario_id = req.body.usuario_id;
     
-    var sql = `SELECT r.*, p.imagen
-        FROM reseñas r
-        JOIN productos p ON r.producto_id = p.id
-        WHERE comprador_id = ${usuario_id}`;
+    var sql = `SELECT r.*, p.nombre as nombre_producto, p.imagen, u.nombre as nombre_vendedor, u.imagen as foto
+    FROM reseñas r
+    JOIN productos p ON r.producto_id = p.id
+    JOIN usuarios u ON r.vendedor_id = u.usuario_id
+    WHERE r.comprador_id = ${usuario_id};`;
     
     conexion.query(sql, (error, results)=>{
        
