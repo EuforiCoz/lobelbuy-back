@@ -341,17 +341,26 @@ app.post("/editarProducto", upload.single('file'), (req, res) => {
 app.post("/eliminarProducto", (req, res) => {
    
     const id = req.body.id;
-    conexion.query("DELETE FROM productos WHERE id = ?",[id], (error, results) => {
+
+    conexion.query("DELETE FROM favoritos WHERE producto_id = ?",[id], (error, results) => {
         if(error){
             console.log("incorrecto")
         }else{
-            if(results.protocol41){
-                res.status(200).send("Eliminado")
-            } else {
-                res.status(400).send("No se ha eliminado")
-            }
+            conexion.query("DELETE FROM productos WHERE id = ?",[id], (error, results) => {
+                if(error){
+                    console.log("incorrecto")
+                }else{
+                    if(results.protocol41){
+                        res.status(200).send("Eliminado")
+                    } else {
+                        res.status(400).send("No se ha eliminado")
+                    }
+                }
+           })
         }
    })
+    
+    
 })
 
 app.post("/mostrarListadoProductos", (req, res) => {
@@ -380,7 +389,7 @@ app.post("/mostrarListadoProductos", (req, res) => {
     
 })
 
-app.get("/", (req, res) => {
+app.get("/buscarProductoInicio", (req, res) => {
     
     conexion.query(`SELECT * FROM (SELECT *, ROW_NUMBER() OVER (PARTITION BY categoria ORDER BY id) AS rn FROM productos) sub WHERE rn <= 4;`, (error, results) => {
         if(error){
@@ -469,10 +478,17 @@ app.post("/filtrarProducto", (req,res) => {
 app.post("/mostrarFichaProducto", (req, res) => {
    
     const id = req.body.id;
-    conexion.query("SELECT * FROM productos WHERE id = ?",[id], (error, results) => {
+    var sql = `SELECT p.*, u.nombre as nombre_usuario, u.imagen as foto 
+                FROM productos p
+                JOIN usuarios u ON p.usuario_id = u.usuario_id
+                WHERE p.id = ${id}`
+
+                
+    conexion.query(sql, (error, results) => {
         if(error){
             console.log("incorrecto")
         }else{
+            console.log(results[0])
             res.status(200).send(results[0])
         }
    })
@@ -510,7 +526,7 @@ app.post("/obtenerConversaciones", (req, res) => {
    
     const usuario = req.body.usuario_id;
    
-    var sql = `SELECT conversaciones.*, u1.nombre AS nombre_usuario1, u2.nombre AS nombre_usuario2
+    var sql = `SELECT conversaciones.*, u1.nombre AS nombre_usuario1, u2.nombre AS nombre_usuario2, u1.imagen AS foto_usuario1, u2.imagen AS foto_usuario2
     FROM conversaciones
     JOIN usuarios u1 ON conversaciones.usuario1_id = u1.usuario_id
     JOIN usuarios u2 ON conversaciones.usuario2_id = u2.usuario_id
