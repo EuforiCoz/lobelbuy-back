@@ -122,6 +122,9 @@ app.post("/perfil/guardarDatos", upload.single('file'), (req, res) => {
     const usuario_id = req.body.usuario_id;
     const nombre = req.body.nombre;
     const apellido = req.body.apellido;
+    const edad = req.body.edad;
+    const sexo = req.body.sexo;
+    const ciudad = req.body.ciudad;
     const direccion = req.body.direccion;
     const imagen = req.file;
     var urlImagen;
@@ -150,7 +153,7 @@ app.post("/perfil/guardarDatos", upload.single('file'), (req, res) => {
     
     subirImagen()
     .then((urlImagen) => {
-        conexion.query("UPDATE usuarios SET nombre = ?, apellido = ?, direccion = ? , imagen = ? WHERE usuario_id = ?", [nombre, apellido, direccion, urlImagen, usuario_id], (error, results)=>{
+        conexion.query("UPDATE usuarios SET nombre = ?, apellido = ? , edad = ?, sexo = ?, ciudad = ?, direccion = ? , imagen = ? WHERE usuario_id = ?", [nombre, apellido, edad, sexo, ciudad, direccion, urlImagen, usuario_id], (error, results)=>{
             //console.log("Mi super ultra imagen: " + urlImagen);
             if(error){
                 console.log(error);
@@ -167,6 +170,30 @@ app.post("/perfil/guardarDatos", upload.single('file'), (req, res) => {
       console.error(error);
       res.send('Ocurrió un error al procesar la imagen');
     });   
+})
+
+app.post("/perfil/guardarDatosSinFoto", (req, res) => {
+   
+    const usuario_id = req.body.usuario_id;
+    const nombre = req.body.nombre;
+    const apellido = req.body.apellido;
+    const edad = req.body.edad;
+    const sexo = req.body.sexo;
+    const ciudad = req.body.ciudad;
+    const direccion = req.body.direccion;
+   
+    conexion.query("UPDATE usuarios SET nombre = ?, apellido = ?, edad = ?, sexo = ?, ciudad = ?, direccion = ? WHERE usuario_id = ?", [nombre, apellido, edad, sexo, ciudad, direccion, usuario_id], (error, results)=>{
+        //console.log("Mi super ultra imagen: " + urlImagen);
+        if(error){
+            console.log(error);
+        }else{
+            if(results.protocol41){
+                res.status(200).send("Actualizado")
+            } else {
+                res.status(400).send("No se ha podido crear la cuenta")
+            }
+        }
+    });
 })
 
 app.post("/perfil/obtenerDatos", (req, res) => {
@@ -193,6 +220,8 @@ app.post("/subirProducto", upload.single('file'),  (req, res) => {
     const precio = req.body.precio;
     const estado = req.body.estado;
     const descripcion = req.body.descripcion;
+    const detalles = req.body.detalles;
+    const envio = req.body.envio;
     const usuario = req.body.usuario;
     const imagenSubir = req.file;
     var urlImagen;
@@ -216,7 +245,7 @@ app.post("/subirProducto", upload.single('file'),  (req, res) => {
 
     subirImagen()
     .then((urlImagen) => {
-        conexion.query("INSERT INTO productos SET ?", {nombre: nombre, categoria: categoria, precio: precio, estado: estado, descripcion: descripcion, reservado: 0, usuario_id: usuario, imagen: urlImagen}, (error, results)=>{
+        conexion.query("INSERT INTO productos SET ?", {nombre: nombre, categoria: categoria, precio: precio, estado: estado, descripcion: descripcion, detalles: detalles, envio: envio, reservado: 0, usuario_id: usuario, imagen: urlImagen}, (error, results)=>{
             if(error){
                 console.log(error);
             }else{
@@ -389,9 +418,9 @@ app.post("/mostrarListadoProductos", (req, res) => {
     
 })
 
-app.get("/", (req, res) => {
+app.get("/buscarProductoInicio", (req, res) => {
     
-    conexion.query(`SELECT * FROM (SELECT *, ROW_NUMBER() OVER (PARTITION BY categoria ORDER BY id) AS rn FROM productos) sub WHERE rn <= 4;`, (error, results) => {
+    conexion.query(`SELECT * FROM (SELECT *, ROW_NUMBER() OVER (PARTITION BY categoria ORDER BY id) AS rn FROM productos WHERE reservado != 2) sub WHERE rn <= 4;`, (error, results) => {
         if(error){
             console.log('Error al buscar productos')
         }else{
@@ -418,7 +447,9 @@ app.post("/buscarProducto", (req, res) => {
     const nombre = req.body.nombre;
     const categoria = req.body.categoria;
     const estado = req.body.estado;
-    
+    console.log(nombre)
+    console.log(categoria)
+    console.log(estado)
     var sql = "";
 
     if(nombre == null && categoria == null && estado == null){
@@ -441,6 +472,7 @@ app.post("/buscarProducto", (req, res) => {
         if(error){
             console.log('Error al buscar productos')
         }else{
+            console.log(results)
             res.status(200).send(results)
         }
     })
