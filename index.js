@@ -111,7 +111,6 @@ const diskstorage = multer.diskStorage({
         cb(null,Date.now() + "-monkeywit-" + file.originalname)
     }
 })
-
 const fileUpload = multer({
     storage: diskstorage
 }).single("image")
@@ -447,6 +446,7 @@ app.post("/buscarProducto", (req, res) => {
     const nombre = req.body.nombre;
     const categoria = req.body.categoria;
     const estado = req.body.estado;
+   
     console.log(nombre)
     console.log(categoria)
     console.log(estado)
@@ -466,8 +466,10 @@ app.post("/buscarProducto", (req, res) => {
         sql = `SELECT * FROM productos WHERE categoria = '${categoria}' AND estado = '${estado}' AND reservado <> 2`;
     } else if(nombre != null && categoria != null && estado != null){
         sql = `SELECT * FROM productos WHERE nombre LIKE '%${nombre}%' AND categoria = '${categoria}' AND estado = '${estado}' AND reservado <> 2`;
+    } else if(nombre != null && categoria == null && estado != null){
+        sql = `SELECT * FROM productos WHERE nombre LIKE '%${nombre}%' AND estado = '${estado}' AND reservado <> 2`;
     }
-   
+    
     conexion.query(sql, (error, results) => {
         if(error){
             console.log('Error al buscar productos')
