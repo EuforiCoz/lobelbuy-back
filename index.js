@@ -417,7 +417,7 @@ app.post("/mostrarListadoProductos", (req, res) => {
     
 })
 
-app.get("/", (req, res) => {
+app.get("/buscarProductoInicio", (req, res) => {
     
     conexion.query(`SELECT * FROM (SELECT *, ROW_NUMBER() OVER (PARTITION BY categoria ORDER BY id) AS rn FROM productos WHERE reservado != 2) sub WHERE rn <= 4;`, (error, results) => {
         if(error){
@@ -445,11 +445,16 @@ app.get("/", (req, res) => {
 app.post("/buscarProducto", (req, res) => {
     const nombre = req.body.nombre;
     const categoria = req.body.categoria;
-    const estado = req.body.estado;
-   
+    var estado = req.body.estado;
+
+    if(estado == undefined){
+        estado = null;
+    }
+    
     console.log(nombre)
     console.log(categoria)
     console.log(estado)
+
     var sql = "";
 
     if(nombre == null && categoria == null && estado == null){
@@ -468,6 +473,8 @@ app.post("/buscarProducto", (req, res) => {
         sql = `SELECT * FROM productos WHERE nombre LIKE '%${nombre}%' AND categoria = '${categoria}' AND estado = '${estado}' AND reservado <> 2`;
     } else if(nombre != null && categoria == null && estado != null){
         sql = `SELECT * FROM productos WHERE nombre LIKE '%${nombre}%' AND estado = '${estado}' AND reservado <> 2`;
+    }else if(nombre == null && categoria == null && estado != null){
+        sql = `SELECT * FROM productos WHERE estado = '${estado}' AND reservado <> 2`;
     }
     
     conexion.query(sql, (error, results) => {
