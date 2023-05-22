@@ -453,7 +453,7 @@ app.post("/buscarProducto", (req, res) => {
     var sql = "";
 
     if(nombre == null && categoria == null && estado == null){
-        sql = "SELECT * FROM productos";
+        sql = "SELECT * FROM productos WHERE reservado <> 2";
     } else if(nombre != null && categoria == null && estado == null){
         sql = `SELECT * FROM productos WHERE nombre LIKE '%${nombre}%' AND reservado <> 2`;
     } else if(nombre != null && categoria != null && estado == null){
