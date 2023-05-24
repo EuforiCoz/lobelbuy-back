@@ -606,7 +606,7 @@ app.post("/obtenerMensajes", (req, res) => {
 app.post("/mostrarProductosFavoritos", (req, res) => {
     const usuario_id = req.body.usuario_id;
 
-    sql = `SELECT p.id, p.nombre, p.precio, p.imagen
+    sql = `SELECT p.id, p.nombre, p.reservado,  p.precio, p.imagen
     FROM favoritos AS f
     JOIN productos AS p ON f.producto_id = p.id
     WHERE f.usuario_id = ${usuario_id}`;
