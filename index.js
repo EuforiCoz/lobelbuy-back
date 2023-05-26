@@ -306,6 +306,7 @@ app.post("/editarProducto", upload.single('file'), (req, res) => {
     const precio = req.body.precio;
     const estado = req.body.estado;
     const descripcion = req.body.descripcion;
+    const detalles = req.body.detalles;
     const imagen = req.body.imagen;
     const imagenEditar = req.file;
     var urlImagen;
@@ -333,7 +334,7 @@ app.post("/editarProducto", upload.single('file'), (req, res) => {
     
     subirImagen()
     .then((urlImagen) => {
-        sql = `UPDATE productos SET nombre = '${nombre}', categoria = '${categoria}', precio = ${precio} , estado = '${estado}', descripcion = '${descripcion}', imagen = '${urlImagen}' WHERE id = ${id}`;
+        sql = `UPDATE productos SET nombre = '${nombre}', categoria = '${categoria}', precio = ${precio} , estado = '${estado}', descripcion = '${descripcion}', detalles = '${detalles}', imagen = '${urlImagen}' WHERE id = ${id}`;
         conexion.query(sql, (error, results)=>{
             //console.log("Mi super ultra imagen: " + urlImagen);
             if(error){
@@ -348,7 +349,7 @@ app.post("/editarProducto", upload.single('file'), (req, res) => {
         });
     })
     .catch(() => {
-        sql = `UPDATE productos SET nombre = '${nombre}', categoria = '${categoria}', precio = '${precio}' , estado = '${estado}', descripcion = '${descripcion}', imagen = '${imagen}' WHERE id = ${id}`;
+        sql = `UPDATE productos SET nombre = '${nombre}', categoria = '${categoria}', precio = '${precio}' , estado = '${estado}', descripcion = '${descripcion}' , detalles = '${detalles}', imagen = '${imagen}' WHERE id = ${id}`;
         conexion.query(sql, (error, results)=>{
             //console.log("Mi super ultra imagen: " + urlImagen);
             if(error){
@@ -417,7 +418,7 @@ app.post("/mostrarListadoProductos", (req, res) => {
     
 })
 
-app.get("/", (req, res) => {
+app.get("/buscarProductoInicio", (req, res) => {
     
     conexion.query(`SELECT * FROM (SELECT *, ROW_NUMBER() OVER (PARTITION BY categoria ORDER BY id) AS rn FROM productos WHERE reservado != 2) sub WHERE rn <= 4;`, (error, results) => {
         if(error){
@@ -606,7 +607,7 @@ app.post("/obtenerMensajes", (req, res) => {
 app.post("/mostrarProductosFavoritos", (req, res) => {
     const usuario_id = req.body.usuario_id;
 
-    sql = `SELECT p.id, p.nombre, p.reservado,  p.precio, p.imagen
+    sql = `SELECT p.id, p.nombre, p.precio, p.imagen
     FROM favoritos AS f
     JOIN productos AS p ON f.producto_id = p.id
     WHERE f.usuario_id = ${usuario_id}`;
