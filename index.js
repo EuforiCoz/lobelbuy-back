@@ -38,7 +38,7 @@ io.on('connection', socket => {
     });
   
     socket.on('message', message => {
-      console.log('Mensaje recibido: ' + message.text);
+      console.log('Mensaje recibido: ' + message.mensaje);
       console.log(message)
       
       conexion.query("INSERT INTO mensajes SET ?", {conversacion_id: message.conversacion_id, envia: message.envia, recibe: message.recibe, mensaje: message.mensaje, fecha: message.fecha}, (error, results) => {
@@ -91,7 +91,10 @@ app.post("/api/registrarse", (req, res) => {
     const nombre = req.body.nombreRegistro;
     const correo = req.body.correoRegistro;
     const contrasena = req.body.contrasenaRegistro;
-    conexion.query("INSERT INTO usuarios SET ?", {nombre: nombre, apellido: "", edad: 0, sexo: "", ciudad: "", direccion: "", correo: correo, contrasena: contrasena, sesion: 0, imagen: ""}, (error, results)=>{
+    console.log(nombre)
+    console.log(correo)
+    console.log(contrasena)
+    conexion.query("INSERT INTO usuarios SET ?", {nombre: nombre, apellido: "", edad: 0, sexo: "", ciudad: "", direccion: "", correo: correo, contrasena: contrasena, sesion: 0, imagen: "https://res.cloudinary.com/dj3zwdn0r/image/upload/v1685135551/usuario_lzjqct.png"}, (error, results)=>{
         if(error){
             console.log(error);
         }else{
@@ -317,7 +320,7 @@ app.post("/editarProducto", upload.single('file'), (req, res) => {
             if(imagenEditar == undefined) {
                 reject("No hay imagen");
             }
-            cloudinary.uploader.upload_stream({ resource_type: 'auto' }, function(error, result) {
+            cloudinary.uploader.upload_stream({ resource_type: 'auto', use_filename: true, unique_filename: true, overwrite: true }, function(error, result) {
                 if (error) {
                     console.log(error);
                     reject(error);
@@ -418,7 +421,7 @@ app.post("/mostrarListadoProductos", (req, res) => {
     
 })
 
-app.get("/", (req, res) => {
+app.get("/buscarProductoInicio", (req, res) => {
     
     conexion.query(`SELECT * FROM (SELECT *, ROW_NUMBER() OVER (PARTITION BY categoria ORDER BY id) AS rn FROM productos WHERE reservado != 2) sub WHERE rn <= 4;`, (error, results) => {
         if(error){
@@ -704,7 +707,7 @@ app.post("/venderProducto", (req, res) => {
     const comprador_id = req.body.comprador_id;
     const vendedor_id = req.body.vendedor_id;
 
-    //console.log(reservado)
+    console.log(comprador_id)
     
     var sql = `UPDATE productos SET reservado = 2 WHERE id = ${producto_id};`;
     
@@ -713,14 +716,19 @@ app.post("/venderProducto", (req, res) => {
         if(error){
             res.status(400).send(error);
         }else{
-            conexion.query("INSERT INTO reseñas SET ?", {valoracion: 0, comentario: "", estado: 0, producto_id: producto_id, comprador_id: comprador_id, vendedor_id: vendedor_id}, (error, results)=>{
+            if(comprador_id != 0) {
+                conexion.query("INSERT INTO reseñas SET ?", {valoracion: 0, comentario: "", estado: 0, producto_id: producto_id, comprador_id: comprador_id, vendedor_id: vendedor_id}, (error, results)=>{
                
-                if(error){
-                    res.status(400).send(error);
-                }else{
-                    res.status(200).send(results);
-                }
-            })
+                    if(error){
+                        res.status(400).send(error);
+                    }else{
+                        res.status(200).send(results);
+                    }
+                })
+            } else{
+                res.status(200).send(results);
+            }
+           
         }
     })
 })
