@@ -613,7 +613,7 @@ app.post("/mostrarProductosFavoritos", (req, res) => {
     sql = `SELECT p.id, p.nombre, p.precio, p.imagen
     FROM favoritos AS f
     JOIN productos AS p ON f.producto_id = p.id
-    WHERE f.usuario_id = ${usuario_id}`;
+    WHERE f.usuario_id = ${usuario_id} AND reservado != 2`;
 
     conexion.query(sql, (error, results)=>{
         if(error){
