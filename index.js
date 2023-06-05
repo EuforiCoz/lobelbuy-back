@@ -421,7 +421,7 @@ app.post("/mostrarListadoProductos", (req, res) => {
     
 })
 
-app.get("/", (req, res) => {
+app.get("/buscarProductoInicio", (req, res) => {
     
     conexion.query(`SELECT * FROM (SELECT *, ROW_NUMBER() OVER (PARTITION BY categoria ORDER BY id) AS rn FROM productos WHERE reservado != 2) sub WHERE rn <= 4;`, (error, results) => {
         if(error){
@@ -450,40 +450,46 @@ app.post("/buscarProducto", (req, res) => {
     const nombre = req.body.nombre;
     const categoria = req.body.categoria;
     var estado = req.body.estado;
+    var precio = req.body.precio;
 
     if(estado == undefined){
         estado = null;
     }
+
+    if(precio == null || precio == "porDefectoPrecio"){
+        precio = 99999;
+    }
     
     console.log(nombre)
     console.log(categoria)
-    console.log(estado)
+    console.log(estado);
+    console.log(precio)
 
     var sql = "";
 
     if(nombre == null && categoria == null && estado == null){
         sql = "SELECT * FROM productos WHERE reservado <> 2";
     } else if(nombre != null && categoria == null && estado == null){
-        sql = `SELECT * FROM productos WHERE nombre LIKE '%${nombre}%' AND reservado <> 2`;
+        sql = `SELECT * FROM productos WHERE nombre LIKE '%${nombre}%' AND reservado <> 2 AND precio <= '${precio}'`;
     } else if(nombre != null && categoria != null && estado == null){
-        sql = `SELECT * FROM productos WHERE nombre LIKE '%${nombre}%' AND categoria = '${categoria}' AND reservado <> 2`;
+        sql = `SELECT * FROM productos WHERE nombre LIKE '%${nombre}%' AND categoria = '${categoria}' AND reservado <> 2 AND precio <= '${precio}'`;
     } else if(nombre != null && categoria != null && estado != null){
-        sql = `SELECT * FROM productos WHERE nombre LIKE '%${nombre}%' AND categoria = '${categoria}' AND estado = '${estado}' AND reservado <> 2`;
+        sql = `SELECT * FROM productos WHERE nombre LIKE '%${nombre}%' AND categoria = '${categoria}' AND estado = '${estado}' AND reservado <> 2 AND precio <= '${precio}'`;
     } else if(nombre == null && categoria != null && estado == null){
-         sql = `SELECT * FROM productos WHERE categoria = '${categoria}' AND reservado <> 2`;
+         sql = `SELECT * FROM productos WHERE categoria = '${categoria}' AND reservado <> 2 AND precio <= '${precio}'`;
     } else if(nombre == null && categoria != null && estado != null){
-        sql = `SELECT * FROM productos WHERE categoria = '${categoria}' AND estado = '${estado}' AND reservado <> 2`;
+        sql = `SELECT * FROM productos WHERE categoria = '${categoria}' AND estado = '${estado}' AND reservado <> 2 AND precio <= '${precio}'`;
     } else if(nombre != null && categoria != null && estado != null){
-        sql = `SELECT * FROM productos WHERE nombre LIKE '%${nombre}%' AND categoria = '${categoria}' AND estado = '${estado}' AND reservado <> 2`;
+        sql = `SELECT * FROM productos WHERE nombre LIKE '%${nombre}%' AND categoria = '${categoria}' AND estado = '${estado}' AND reservado <> 2 AND precio <= '${precio}'`;
     } else if(nombre != null && categoria == null && estado != null){
-        sql = `SELECT * FROM productos WHERE nombre LIKE '%${nombre}%' AND estado = '${estado}' AND reservado <> 2`;
+        sql = `SELECT * FROM productos WHERE nombre LIKE '%${nombre}%' AND estado = '${estado}' AND reservado <> 2 AND precio <= '${precio}'`;
     }else if(nombre == null && categoria == null && estado != null){
-        sql = `SELECT * FROM productos WHERE estado = '${estado}' AND reservado <> 2`;
+        sql = `SELECT * FROM productos WHERE estado = '${estado}' AND reservado <> 2 AND precio <= '${precio}'`;
     }
-    
+    console.log(sql)
     conexion.query(sql, (error, results) => {
         if(error){
-            console.log('Error al buscar productos')
+            console.log(error)
         }else{
             console.log(results)
             res.status(200).send(results)
@@ -613,7 +619,7 @@ app.post("/mostrarProductosFavoritos", (req, res) => {
     sql = `SELECT p.id, p.nombre, p.precio, p.imagen
     FROM favoritos AS f
     JOIN productos AS p ON f.producto_id = p.id
-    WHERE f.usuario_id = ${usuario_id} AND reservado != 2`;
+    WHERE f.usuario_id = ${usuario_id}`;
 
     conexion.query(sql, (error, results)=>{
         if(error){
