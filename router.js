@@ -1,5 +1,5 @@
 const express = require('express');
-const router = express.Router();
+export const router = express.Router();
 const multer = require('multer');
 
 const cloudinary = require('cloudinary').v2;
@@ -682,4 +682,3 @@ router.post("/obtenerMensajes", (req, res) => {
    
 })
 
-module.exports = router;
