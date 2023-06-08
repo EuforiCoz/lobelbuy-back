@@ -307,7 +307,7 @@ router.post("/mostrarListadoProductos", (req, res) => {
     
 })
 
-router.get("/buscarProductoInicio", (req, res) => {
+router.get("/", (req, res) => {
     
     conexion.query(`SELECT * FROM (SELECT *, ROW_NUMBER() OVER (PARTITION BY categoria ORDER BY id) AS rn FROM productos WHERE reservado != 2) sub WHERE rn <= 4;`, (error, results) => {
         if(error){
