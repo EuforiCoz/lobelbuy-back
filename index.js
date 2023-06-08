@@ -5,7 +5,8 @@ const app = express();
 const path = require("path"); //vercel
 const multer = require('multer');
 
-app.use('/', require('./router'));
+import router from "./router";
+app.use('/', router)
 
 app.use(cors())
 const http = require("http").Server(app);
