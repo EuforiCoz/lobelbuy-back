@@ -16,7 +16,7 @@ cloudinary.config({
 const storage = multer.memoryStorage();
 const upload = multer({ storage: storage });
 
-const conexion = require("./databases/db")
+const conexion = require("./database/db")
 
 router.post("/api/login", (req, res) => {
     const correo = req.body.correoLogin;
